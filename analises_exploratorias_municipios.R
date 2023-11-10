@@ -101,4 +101,25 @@ ibge2022 %>%
 
 #Agora é sua vez: experimente trocar a varíavel usada como referência para o ordenamento. E também mudar a ordem
 
-#mais epráticas E ANÁLISES
+#Junção de tabelas
+
+#usamos a função inner_join para juntar duas tabelas que compartilhem uma ou mais variáveis com mesmos valores e significados
+
+#Vamos acrescentar informações de percentual de despesas com saúde e educação dos municípios brasileiros em 2022
+desp_saude_educacao <- readRDS("data/desp_saude_educacao.rds")
+
+
+glimpse(desp_saude_educacao)
+
+glimpse(ibge2022)
+
+censo_despesas_municipios<-
+ibge2022 %>%
+  mutate(id_municipio = as.character(municipio_codigo)) %>%
+  inner_join(desp_saude_educacao)
+
+#O inner_join por padrão requer que haja duas colunas com o mesmo nome e mesmo tipo. Para isso é que se faz o mutate.
+#O mutate cria uma coluna a mais na tabela ibge2022 com o conteúdo da coluna municipio_codigo convertido para character
+#Essa nova coluna tem o mesmo nome e o mesmo tipo da coluna id_municipio da tabela desp_saude_educacao
+
+

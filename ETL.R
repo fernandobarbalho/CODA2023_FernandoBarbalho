@@ -69,3 +69,5 @@ desp_saude_educacao<- siconfiBD::get_perc_function_exp_municipality(
 
 desp_saude_educacao %>%
   readr::write_csv("data/saude_educacao_municipios.csv")
+
+saveRDS(desp_saude_educacao,"data/desp_saude_educacao.rds")
