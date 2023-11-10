@@ -1,4 +1,4 @@
-
+library(siconfiBD)
 
 ###Dados do IBGE
 
@@ -56,4 +56,16 @@ ibge2022 %>%
   readr::write_csv("data/censo_pop_municipios_2022.csv")
 
 #novas cargas
+siconfiBD::setup_siconfi("nice-diorama-306223")
 
+funcoes<-
+siconfiBD::get_distinct_function()
+
+desp_saude_educacao<- siconfiBD::get_perc_function_exp_municipality(
+  year = 2022,
+  gov_function = c("Saúde","Educação"),
+  expense_stage =  "Despesas Liquidadas"
+)
+
+desp_saude_educacao %>%
+  readr::write_csv("data/saude_educacao_municipios.csv")
