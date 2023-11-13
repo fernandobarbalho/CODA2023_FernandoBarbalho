@@ -1,9 +1,15 @@
 library(tidyverse)
+library(rio)
+
 
 #Carrega os dados disponívies na pasta data
 
+url_ibge<- "https://raw.githubusercontent.com/fernandobarbalho/CODA2023_FernandoBarbalho/master/data/censo_pop_municipios_2022.csv"
 
-ibge2022 <- read_csv("data/censo_pop_municipios_2022.csv")
+
+
+ibge2022 <- readr::read_csv(url_ibge)
+
 
 
 #Estatísticas globais
@@ -106,7 +112,13 @@ ibge2022 %>%
 #usamos a função inner_join para juntar duas tabelas que compartilhem uma ou mais variáveis com mesmos valores e significados
 
 #Vamos acrescentar informações de valor de gastos e percentual de despesas com saúde e educação dos municípios brasileiros em 2022
-desp_saude_educacao <- readRDS("data/desp_saude_educacao.rds")
+#desp_saude_educacao <- readRDS("data/desp_saude_educacao.rds")
+
+
+url_saude_educacao<- "https://raw.githubusercontent.com/fernandobarbalho/CODA2023_FernandoBarbalho/master/data/saude_educacao_municipios.csv"
+
+
+desp_saude_educacao <- read_csv(url_saude_educacao)
 
 
 glimpse(desp_saude_educacao)
@@ -115,16 +127,14 @@ glimpse(ibge2022)
 
 censo_despesas_municipios<-
   desp_saude_educacao %>%
-  inner_join(
-    ibge2022 %>%
-      mutate(id_municipio = as.character(municipio_codigo))
+  inner_join(ibge2022 %>%
+      rename(id_municipio = municipio_codigo)
   )
 
 glimpse(censo_despesas_municipios)
 
 #O inner_join por padrão requer que haja duas colunas com o mesmo nome e mesmo tipo. Para isso é que se faz o mutate.
-#O mutate cria uma coluna a mais na tabela ibge2022 com o conteúdo da coluna municipio_codigo convertido para character
-#Essa nova coluna tem o mesmo nome e o mesmo tipo da coluna id_municipio da tabela desp_saude_educacao
+#O rename altera o nome da coluna municipio_codigo para id_municipio de forma a ficar compatível com a tabela desp_saude_educacao
 
 censo_despesas_municipios <-
   censo_despesas_municipios %>%
@@ -142,7 +152,7 @@ censo_despesas_municipios %>%
   filter(conta== "Saúde") %>%
   slice_max(order_by = perc, n=10) %>%
   ggplot() + #indica que deseja fazer um gráfico usando o ggplot
-  geom_col(aes(x=perc,y=municipio))
+  geom_col(aes(x=perc,y=municipio)) #A função geom_col indica o tipo de gráfico. A função aes é usada nesse caso para informar o que fica nos eixos x e y
 
 
 #Agora passa a ser exibido por ordem dos valores de gastos percentuais em saúde
@@ -152,3 +162,58 @@ censo_despesas_municipios %>%
   mutate(municipio = reorder(municipio,perc)) %>% #reordena o conjunto de nomes de municipio de acordo com o conjunto de valores percentuais
   ggplot() + #indica que deseja fazer um gráfico usando o ggplot
   geom_col(aes(x=perc,y=municipio))
+
+
+#E se o ranking for feito por despesa per capita?
+censo_despesas_municipios %>%
+  filter(conta== "Saúde") %>%
+  slice_max(order_by = perc, n=10) %>%
+  mutate(municipio = reorder(municipio,desp_per_capta)) %>% #reordena o conjunto de nomes de municipio de acordo com o conjunto de valores percentuais
+  ggplot() + #indica que deseja fazer um gráfico usando o ggplot
+  geom_col(aes(x=desp_per_capta,y=municipio))
+
+
+
+#Uma análise exploratória de dados um pouco mais avançada, a análise de distribuição vai requerer o uso de uma outra técniga gráfico: o box-plot
+
+
+#O gráfico abaixo não permitirá ver a distribuição
+censo_despesas_municipios %>%
+  ggplot() +
+  geom_boxplot(aes(x=conta, y=valor)) #geom_boxplot indica que o gráfico vai ser do tipo box-plot.
+
+
+#Esse logo abaixo vai permitir
+
+censo_despesas_municipios %>%
+  ggplot() +
+  geom_boxplot(aes(x=conta, y=valor)) + #geom_boxplot indica que o gráfico vai ser do tipo box-plot.
+  scale_y_log10() #muda a escala de linear para logartimica
+
+
+#Podemos comparar os gastos só com educação entre um conjunto de estados
+
+censo_despesas_municipios %>%
+  filter(uf %in% c("SP","RJ","ES","MG"),
+         conta == "Educação") %>%
+  ggplot() +
+  geom_boxplot(aes(x=uf, y=valor)) + #geom_boxplot indica que o gráfico vai ser do tipo box-plot.
+  scale_y_log10() #muda a escala de linear para logartimica
+
+
+
+#comparações mais justas podem ser feitas a partir de percentual de gastos ou por renda per-capita
+censo_despesas_municipios %>%
+  filter(uf %in% c("SP","RJ","ES","MG"),
+         conta == "Educação") %>%
+  ggplot() +
+  geom_boxplot(aes(x=uf, y=perc))
+#Oberve que para esse caso não foi necessário a transformação logaritimca para a visualização dos box-plots
+
+
+#Podemos usar cores distinas para comparar saúde e educação ao mesmo tempo
+censo_despesas_municipios %>%
+  filter(uf %in% c("SP","RJ","ES","MG")) %>%
+  ggplot() +
+  geom_boxplot(aes(x=uf, y= desp_per_capta, color=conta)) #o atributo color é usado para indicar qual variável vai ser usada para pintar os box-plots
+
