@@ -190,6 +190,8 @@ censo_despesas_municipios %>%
   geom_boxplot(aes(x=conta, y=valor)) + #geom_boxplot indica que o gráfico vai ser do tipo box-plot.
   scale_y_log10() #muda a escala de linear para logartimica
 
+#Pesquise a relação entre o box-plot e os quartis
+
 
 #Podemos comparar os gastos só com educação entre um conjunto de estados
 
@@ -217,3 +219,12 @@ censo_despesas_municipios %>%
   ggplot() +
   geom_boxplot(aes(x=uf, y= desp_per_capta, color=conta)) #o atributo color é usado para indicar qual variável vai ser usada para pintar os box-plots
 
+
+
+censo_despesas_municipios %>%
+  filter(uf=="MG",
+         conta== "Saúde") %>%
+  slice_max(order_by = desp_per_capta, n=10) %>%
+  mutate(municipio = reorder(municipio, desp_per_capta)) %>%
+  ggplot() +
+  geom_col(aes(x=desp_per_capta, y=municipio))
