@@ -237,3 +237,6 @@ censo_despesas_municipios %>%
   mutate(municipio = reorder(municipio, desp_per_capta)) %>%
   ggplot() +
   geom_col(aes(x=desp_per_capta, y=municipio))
+
+
+#link para análise do chatGPT: https://chat.openai.com/share/756fb43b-bd4c-4885-9bb6-2fffa26a94c4
