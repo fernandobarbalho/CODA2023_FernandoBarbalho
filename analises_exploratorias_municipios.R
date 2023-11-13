@@ -105,7 +105,7 @@ ibge2022 %>%
 
 #usamos a função inner_join para juntar duas tabelas que compartilhem uma ou mais variáveis com mesmos valores e significados
 
-#Vamos acrescentar informações de percentual de despesas com saúde e educação dos municípios brasileiros em 2022
+#Vamos acrescentar informações de valor de gastos e percentual de despesas com saúde e educação dos municípios brasileiros em 2022
 desp_saude_educacao <- readRDS("data/desp_saude_educacao.rds")
 
 
@@ -114,12 +114,41 @@ glimpse(desp_saude_educacao)
 glimpse(ibge2022)
 
 censo_despesas_municipios<-
-ibge2022 %>%
-  mutate(id_municipio = as.character(municipio_codigo)) %>%
-  inner_join(desp_saude_educacao)
+  desp_saude_educacao %>%
+  inner_join(
+    ibge2022 %>%
+      mutate(id_municipio = as.character(municipio_codigo))
+  )
+
+glimpse(censo_despesas_municipios)
 
 #O inner_join por padrão requer que haja duas colunas com o mesmo nome e mesmo tipo. Para isso é que se faz o mutate.
 #O mutate cria uma coluna a mais na tabela ibge2022 com o conteúdo da coluna municipio_codigo convertido para character
 #Essa nova coluna tem o mesmo nome e o mesmo tipo da coluna id_municipio da tabela desp_saude_educacao
 
+censo_despesas_municipios <-
+  censo_despesas_municipios %>%
+  mutate(desp_per_capta = valor/populacao_residente)
 
+#A análise exploratória de dados mais atual é feita com forte apoio de gráficos.
+#Gráficos em R são fortemente empoderados com o apoio da biblioteca ggplot2 que faz parte do tidyverse
+
+#Vamos aprender por exemplos, usando os dados que acabos de agregar às nossas análises
+
+#Ranking dos municípios com maio gasto percentual de saúde
+
+#inicialmente o gráfico é exibido em ordem alfabética do nome dos municípios
+censo_despesas_municipios %>%
+  filter(conta== "Saúde") %>%
+  slice_max(order_by = perc, n=10) %>%
+  ggplot() + #indica que deseja fazer um gráfico usando o ggplot
+  geom_col(aes(x=perc,y=municipio))
+
+
+#Agora passa a ser exibido por ordem dos valores de gastos percentuais em saúde
+censo_despesas_municipios %>%
+  filter(conta== "Saúde") %>%
+  slice_max(order_by = perc, n=10) %>%
+  mutate(municipio = reorder(municipio,perc)) %>% #reordena o conjunto de nomes de municipio de acordo com o conjunto de valores percentuais
+  ggplot() + #indica que deseja fazer um gráfico usando o ggplot
+  geom_col(aes(x=perc,y=municipio))
