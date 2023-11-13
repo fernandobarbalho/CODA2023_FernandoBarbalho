@@ -173,6 +173,15 @@ censo_despesas_municipios %>%
   geom_col(aes(x=desp_per_capta,y=municipio))
 
 
+#E em que estados ficam esses municípios? A cor de preenchimento das barras vai indicar
+
+censo_despesas_municipios %>%
+  filter(conta== "Saúde") %>%
+  slice_max(order_by = perc, n=10) %>%
+  mutate(municipio = reorder(municipio,desp_per_capta)) %>% #reordena o conjunto de nomes de municipio de acordo com o conjunto de valores percentuais
+  ggplot() + #indica que deseja fazer um gráfico usando o ggplot
+  geom_col(aes(x=desp_per_capta,y=municipio, fill=uf)) #o argumento fill indica qual variável será usada como referência para o preenchimento da coluna
+
 
 #Uma análise exploratória de dados um pouco mais avançada, a análise de distribuição vai requerer o uso de uma outra técniga gráfico: o box-plot
 
