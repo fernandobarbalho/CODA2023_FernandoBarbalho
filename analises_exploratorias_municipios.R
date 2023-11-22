@@ -1,5 +1,4 @@
 library(tidyverse)
-library(rio)
 
 
 #Carrega os dados disponívies na pasta data
@@ -167,7 +166,7 @@ censo_despesas_municipios %>%
 #E se o ranking for feito por despesa per capita?
 censo_despesas_municipios %>%
   filter(conta== "Saúde") %>%
-  slice_max(order_by = perc, n=10) %>%
+  slice_max(order_by = desp_per_capta, n=10) %>%
   mutate(municipio = reorder(municipio,desp_per_capta)) %>% #reordena o conjunto de nomes de municipio de acordo com o conjunto de valores percentuais
   ggplot() + #indica que deseja fazer um gráfico usando o ggplot
   geom_col(aes(x=desp_per_capta,y=municipio))
@@ -177,7 +176,7 @@ censo_despesas_municipios %>%
 
 censo_despesas_municipios %>%
   filter(conta== "Saúde") %>%
-  slice_max(order_by = perc, n=10) %>%
+  slice_max(order_by = desp_per_capta, n=10) %>%
   mutate(municipio = reorder(municipio,desp_per_capta)) %>% #reordena o conjunto de nomes de municipio de acordo com o conjunto de valores percentuais
   ggplot() + #indica que deseja fazer um gráfico usando o ggplot
   geom_col(aes(x=desp_per_capta,y=municipio, fill=uf)) #o argumento fill indica qual variável será usada como referência para o preenchimento da coluna
